@@ -34,34 +34,37 @@ int main(){
     if (curl_handle){
         struct memory chunk = {0};
         CURLcode res;
+
         curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, cb);
         curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&chunk);
         curl_easy_setopt(curl_handle, CURLOPT_URL, "https://kernel.org");
 
         res = curl_easy_perform(curl_handle);
-
-        if (!res){
+        if (!res) {
             FILE *file = fopen("curl_output", "w+");
-            if (file){
+            if (file) {
                 fwrite(chunk.response, sizeof(char), chunk.size, file);
                 fclose(file);
+
+                free(chunk.response);
+                curl_easy_cleanup(curl_handle);
+
+                return 0;
             }
-            else{
+            else {
                 fclose(file);
                 curl_easy_cleanup(curl_handle);
+
                 return 3;
             }
         }
-        else{
+        else {
             curl_easy_cleanup(curl_handle);
+
             return 2;
         }
-
-        free(chunk.response);
-        curl_easy_cleanup(curl_handle);
-        return 0;
     }
-    else{
+    else {
         return 1;
     }
 }
